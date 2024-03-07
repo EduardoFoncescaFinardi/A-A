@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aea.aea.model.Servico;
 
 @RestController
-@RequestMapping("categoria")
+@RequestMapping("Servico")
 public class ServicoController {
 
     Logger log = LoggerFactory.getLogger(getClass());
@@ -35,65 +35,63 @@ public class ServicoController {
     @PostMapping
     // @ResponseStatus(code = HttpStatus.CREATED)
     public ResponseEntity<Servico> create(@RequestBody Servico servico) {
-        log.info("cadastrando categoria: {}", categoria);
-        repository.add(categoria);
+        log.info("cadastrando Servico: {}", servico);
+        repository.add(servico);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(categoria);
+                .body(servico);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Categoria> get(@PathVariable Long id) {
+    public ResponseEntity<Servico> get(@PathVariable Long id) {
         log.info("Buscar por id: {}", id);
 
-        var optionalCategoria = buscarCategoriaPorId(id);
+        var optionalServico = buscarServicoPorId(id);
 
-        if (optionalCategoria.isEmpty())
+        if (optionalServico.isEmpty())
             return ResponseEntity.notFound().build();
 
-        return ResponseEntity.ok(optionalCategoria.get());
+        return ResponseEntity.ok(optionalServico.get());
     }
-
-
 
     @DeleteMapping("{id}")
     public ResponseEntity<Object> destroy(@PathVariable Long id) {
-        log.info("apagando categoria {}", id);
+        log.info("apagando Servico {}", id);
 
-        var optionalCategoria = buscarCategoriaPorId(id);
+        var optionalServico = buscarServicoPorId(id);
 
-        if (optionalCategoria.isEmpty())
+        if (optionalServico.isEmpty())
             return ResponseEntity.notFound().build();
 
-        repository.remove(optionalCategoria.get());
+        repository.remove(optionalServico.get());
 
         return ResponseEntity.noContent().build();
 
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Categoria categoria){
-        log.info("atualizando categoria id {} para {}", id, categoria);
+    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Servico servico){
+        log.info("atualizando servico id {} para {}", id, servico);
         
-        var optionalCategoria = buscarCategoriaPorId(id);
+        var optionalServico = buscarServicoPorId(id);
 
-        if (optionalCategoria.isEmpty())
+        if (optionalServico.isEmpty())
             return ResponseEntity.notFound().build();
 
-        var categoriaEncontrada = optionalCategoria.get();
-        var categoriaAtualizada = new Categoria(id, categoria.nome(), categoria.icone());
-        repository.remove(categoriaEncontrada);
-        repository.add(categoriaAtualizada);
+        var servicoEncontrado = optionalServico.get();
+        var servicoAtualizado = new Servico(id, servico.nome(), servico.icone());
+        repository.remove(servicoEncontrado);
+        repository.add(servicoAtualizado);
 
-        return ResponseEntity.ok().body(categoriaAtualizada);
+        return ResponseEntity.ok().body(servicoAtualizado);
     }
 
-    private Optional<Categoria> buscarCategoriaPorId(Long id) {
-        var optionalCategoria = repository
+    private Optional<Servico> buscarServicoPorId(Long id) {
+        var optionalServico = repository
                 .stream()
                 .filter(c -> c.id().equals(id))
                 .findFirst();
-        return optionalCategoria;
+        return optionalServico;
     }
 
 }

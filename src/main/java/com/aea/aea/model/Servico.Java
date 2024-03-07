@@ -1,4 +1,4 @@
-package com.aea.aea;
+package com.aea.aea.model;
 
 import java.util.Random;
 
