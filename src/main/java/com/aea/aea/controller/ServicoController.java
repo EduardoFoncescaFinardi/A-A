@@ -70,9 +70,9 @@ public class ServicoController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Servico servico){
+    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Servico servico) {
         log.info("atualizando servico id {} para {}", id, servico);
-        
+
         var optionalServico = buscarServicoPorId(id);
 
         if (optionalServico.isEmpty())
