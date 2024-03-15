@@ -67,15 +67,20 @@ public class ServicoController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Object> update(@PathVariable Long id, 
-@RequestBody Servico servico){
+    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Servico servico){
         log.info("atualizando servico id {} para {}", id, servico);
+        
+        var optionalServico = buscarServicoPorId(id);
 
-        verificarSeExisteServico(id);
-     
-        servico.setId(id);
-        ServicoRepository.save(servico);
-        return ResponseEntity.ok(servico);
+        if (optionalServico.isEmpty())
+            return ResponseEntity.notFound().build();
+
+        var servicoEncontrado = optionalServico.get();
+        var servicoAtualizado = new Servico(id, servico.nome(), servico.icone());
+        repository.remove(servicoEncontrado);
+        repository.add(servicoAtualizado);
+
+        return ResponseEntity.ok().body(servicoAtualizado);
     }
 
     private void verificarSeExisteServico(Long id) {
