@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,83 +16,75 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.aea.aea.model.Servico;
+import com.aea.aea.repository.ServicoRepository;
 
 @RestController
 @RequestMapping("Servico")
+
+
 public class ServicoController {
 
     Logger log = LoggerFactory.getLogger(getClass());
 
-    List<Servico> repository = new ArrayList<>();
+    @Autowired
+    ServicoRepository ServicoRepository;
 
     @GetMapping
     public List<Servico> index() {
-        return repository;
+        return ServicoRepository.findAll();
     }
 
     @PostMapping
-    // @ResponseStatus(code = HttpStatus.CREATED)
-    public ResponseEntity<Servico> create(@RequestBody Servico servico) {
-        log.info("cadastrando Servico: {}", servico);
-        repository.add(servico);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(servico);
+    @ResponseStatus(code = HttpStatus.CREATED)
+    public Servico create(@RequestBody Servico servico) {
+    ServicoRepository.save(servico);
+    return servico;
     }
 
     @GetMapping("{id}")
     public ResponseEntity<Servico> get(@PathVariable Long id) {
         log.info("Buscar por id: {}", id);
 
-        var optionalServico = buscarServicoPorId(id);
-
-        if (optionalServico.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(optionalServico.get());
+        return ServicoRepository
+        .findById(id)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Object> destroy(@PathVariable Long id) {
-        log.info("apagando Servico {}", id);
+        log.info("apagando servico {}", id);
 
-        var optionalServico = buscarServicoPorId(id);
+        verificarSeExisteServico(id);
 
-        if (optionalServico.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        repository.remove(optionalServico.get());
-
+        ServicoRepository.deleteById(id);
         return ResponseEntity.noContent().build();
-
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Servico servico){
+    public ResponseEntity<Object> update(@PathVariable Long id, 
+@RequestBody Servico servico){
         log.info("atualizando servico id {} para {}", id, servico);
-        
-        var optionalServico = buscarServicoPorId(id);
 
-        if (optionalServico.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        var servicoEncontrado = optionalServico.get();
-        var servicoAtualizado = new Servico(id, servico.nome(), servico.icone());
-        repository.remove(servicoEncontrado);
-        repository.add(servicoAtualizado);
-
-        return ResponseEntity.ok().body(servicoAtualizado);
+        verificarSeExisteServico(id);
+     
+        servico.setId(id);
+        ServicoRepository.save(servico);
+        return ResponseEntity.ok(servico);
     }
 
-    private Optional<Servico> buscarServicoPorId(Long id) {
-        var optionalServico = repository
-                .stream()
-                .filter(c -> c.id().equals(id))
-                .findFirst();
-        return optionalServico;
+    private void verificarSeExisteServico(Long id) {
+        ServicoRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servico não encontrada" )
+            );
     }
+
 
 }
