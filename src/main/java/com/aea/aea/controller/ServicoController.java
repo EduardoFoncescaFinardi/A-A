@@ -70,19 +70,14 @@ public class ServicoController {
     public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Servico servico){
         log.info("atualizando servico id {} para {}", id, servico);
         
-        var optionalServico = buscarServicoPorId(id);
+        verificarSeExisteServico(id);
 
-        if (optionalServico.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        var servicoEncontrado = optionalServico.get();
-        var servicoAtualizado = new Servico(id, servico.nome(), servico.icone());
-        repository.remove(servicoEncontrado);
-        repository.add(servicoAtualizado);
-
-        return ResponseEntity.ok().body(servicoAtualizado);
+        servico.setId(id);
+        ServicoRepository.save(servico);
+        return ResponseEntity.ok(servico);
     }
 
+    
     private void verificarSeExisteServico(Long id) {
         ServicoRepository
             .findById(id)
