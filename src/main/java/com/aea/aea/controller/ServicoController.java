@@ -1,11 +1,9 @@
 package com.aea.aea.controller;
 
-import java.util.ArrayList;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import java.util.List;
-import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +20,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.aea.aea.model.Servico;
 import com.aea.aea.repository.ServicoRepository;
+import lombok.extern.slf4j.Slf4j;;
 
 @RestController
 @RequestMapping("Servico")
-
-
+@Slf4j
 public class ServicoController {
-
-    Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     ServicoRepository ServicoRepository;
@@ -40,10 +36,10 @@ public class ServicoController {
     }
 
     @PostMapping
-    @ResponseStatus(code = HttpStatus.CREATED)
+    @ResponseStatus(CREATED)
     public Servico create(@RequestBody Servico servico) {
-    ServicoRepository.save(servico);
-    return servico;
+        log.info("cadastrando serviço: {}", servico);
+        return ServicoRepository.save(servico);
     }
 
     @GetMapping("{id}")
@@ -51,40 +47,36 @@ public class ServicoController {
         log.info("Buscar por id: {}", id);
 
         return ServicoRepository
-        .findById(id)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+                .findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Object> destroy(@PathVariable Long id) {
-        log.info("apagando servico {}", id);
+    @ResponseStatus(NO_CONTENT)
+    public void destroy(@PathVariable Long id) {
+        log.info("apagando serviço {}", id);
 
         verificarSeExisteServico(id);
 
         ServicoRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Servico servico){
+    public Servico update(@PathVariable Long id, @RequestBody Servico servico) {
         log.info("atualizando servico id {} para {}", id, servico);
-        
+
         verificarSeExisteServico(id);
 
         servico.setId(id);
-        ServicoRepository.save(servico);
-        return ResponseEntity.ok(servico);
+        return ServicoRepository.save(servico);
     }
 
-    
     private void verificarSeExisteServico(Long id) {
         ServicoRepository
-            .findById(id)
-            .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servico não encontrada" )
-            );
+                .findById(id)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Servico não encontrada"));
     }
-
 
 }
